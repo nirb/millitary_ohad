@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+build/
+
+# Local Wrangler / Cloudflare emulation state
+.wrangler/
+
+# System / IDE files
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment credentials
+.env
+.env.local
+.env.*.local

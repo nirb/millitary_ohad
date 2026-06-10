@@ -1,0 +1,9 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "supply-command-base"
+compatibility_date = "2024-04-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "supply-db"
+database_id = "6603d25e-c193-447e-9d5b-2604e04e6eff"

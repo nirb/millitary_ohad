@@ -1,0 +1,344 @@
+/* Supply Command Base (Mobile-First Hebrew Inventory UI - Light-Blue Theme) */
+
+:root {
+  /* Tactical Light Blue Theme Colors */
+  --bg-color-start: #f8fafc;    /* slate-50 */
+  --bg-color-end: #f1f5f9;      /* slate-100 */
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8fafc;
+  --accent-color: #2563eb;      /* Tactical Blue (blue-600) */
+  --accent-color-hover: #1d4ed8;/* blue-700 */
+  --accent-glow: rgba(37, 99, 235, 0.1);
+  --accent-text: #ffffff;
+  --border-color: #cbd5e1;      /* slate-300 */
+  
+  /* Text and Alerts */
+  --color-text-primary: #0f172a;   /* slate-900 */
+  --color-text-secondary: #475569; /* slate-600 */
+  --color-text-muted: #94a3b8;     /* slate-400 */
+  
+  --color-warning: #d97706;    /* Dark Gold (amber-600) for readability on white */
+  --color-danger: #e11d48;     /* Red Alert (rose-600) */
+  --color-success: #16a34a;    /* Solid Green (green-600) */
+  
+  --font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-family);
+  background: linear-gradient(135deg, var(--bg-color-start) 0%, var(--bg-color-end) 100%);
+  color: var(--color-text-primary);
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: calc(75px + var(--safe-area-bottom)); /* Leave space for sticky bottom nav */
+}
+
+/* Typography & Headers */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Button & Interactive Micro-animations */
+button, .clickable {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-family);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+button:active, .clickable:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Custom Tactical Inputs */
+.input-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.tactical-input {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: 16px;
+  transition: all 0.2s;
+  direction: ltr; /* numbers/english input */
+  text-align: right;
+}
+
+.tactical-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px var(--accent-glow);
+  background-color: #ffffff;
+}
+
+.tactical-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Primary Button */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-hover) 100%);
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.btn-danger {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--color-danger) 0%, #be123c 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+/* Glassmorphism Navigation & Layout Elements */
+.header-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.bottom-nav-glass {
+  background: rgba(248, 250, 252, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-color);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding-bottom: var(--safe-area-bottom);
+}
+
+/* Modals & Overlay (Tactical Bottom Sheet) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end; /* Bottom sheet styling on mobile */
+  justify-content: center;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center; /* Centered modal on desktop */
+  }
+}
+
+.bottom-sheet {
+  width: 100%;
+  max-height: 90vh;
+  background: var(--card-bg);
+  border-top: 2px solid var(--border-color);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 24px 20px;
+  padding-bottom: calc(24px + var(--safe-area-bottom));
+  overflow-y: auto;
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.15);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .bottom-sheet {
+    max-width: 480px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    box-shadow: 0 12px 48px rgba(15, 23, 42, 0.2);
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* List Table Components */
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tactical-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.tactical-table th {
+  background-color: #f8fafc;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  padding: 12px 14px;
+  text-align: right;
+  font-size: 13px;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tactical-table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.tactical-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-row-interactive {
+  transition: background-color 0.15s;
+  cursor: pointer;
+}
+
+.table-row-interactive:hover {
+  background-color: rgba(37, 99, 235, 0.04);
+}
+
+.table-row-interactive:active {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+/* Badges and Indicators */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.badge-olive {
+  background-color: #e2e8f0;    /* slate-200 */
+  color: var(--color-text-secondary);
+  border: 1px solid #cbd5e1;
+}
+
+.badge-mint {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--accent-color);
+}
+
+.gap-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.gap-ok {
+  color: var(--accent-color);
+}
+
+.gap-short {
+  color: var(--color-danger);
+}
+
+.gap-none {
+  color: var(--color-text-muted);
+}
