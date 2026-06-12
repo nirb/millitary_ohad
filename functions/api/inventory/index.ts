@@ -9,7 +9,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   try {
     const { results } = await context.env.DB.prepare(
-      'SELECT id, category, product, quantity, container_capacity, required_target, gap FROM inventory ORDER BY category ASC, product ASC'
+      'SELECT id, category, product, quantity, container_capacity, required_target, gap, notes FROM inventory ORDER BY category ASC, product ASC'
     ).all();
 
     return createJSONResponse(results);
@@ -31,6 +31,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       quantity?: number;
       container_capacity?: number | null;
       required_target?: number;
+      notes?: string | null;
     };
 
     const category = data.category?.trim();
@@ -38,6 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const quantity = data.quantity ?? 0;
     const container_capacity = data.container_capacity ?? null;
     const required_target = data.required_target ?? 0;
+    const notes = data.notes?.trim() || null;
 
     if (!category || !product) {
       return createErrorResponse('קטגוריה ושם מוצר הם שדות חובה');
@@ -45,10 +47,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Insert inventory item
     const result = await context.env.DB.prepare(
-      `INSERT INTO inventory (category, product, quantity, container_capacity, required_target) 
-       VALUES (?, ?, ?, ?, ?) RETURNING id, category, product, quantity, container_capacity, required_target, gap`
+      `INSERT INTO inventory (category, product, quantity, container_capacity, required_target, notes) 
+       VALUES (?, ?, ?, ?, ?, ?) RETURNING id, category, product, quantity, container_capacity, required_target, gap, notes`
     )
-      .bind(category, product, quantity, container_capacity, required_target)
+      .bind(category, product, quantity, container_capacity, required_target, notes)
       .first();
 
     if (!result) {

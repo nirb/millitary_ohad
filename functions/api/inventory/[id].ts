@@ -19,6 +19,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       quantity?: number;
       container_capacity?: number | null;
       required_target?: number;
+      notes?: string | null;
     };
 
     const category = data.category?.trim();
@@ -26,6 +27,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const quantity = data.quantity !== undefined ? data.quantity : undefined;
     const container_capacity = data.container_capacity !== undefined ? data.container_capacity : undefined;
     const required_target = data.required_target !== undefined ? data.required_target : undefined;
+    const notes = data.notes !== undefined ? data.notes : undefined;
 
     // Build query dynamically based on provided fields
     const updates: string[] = [];
@@ -51,6 +53,10 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       updates.push('required_target = ?');
       values.push(required_target);
     }
+    if (notes !== undefined) {
+      updates.push('notes = ?');
+      values.push(notes ? notes.trim() : null);
+    }
 
     if (updates.length === 0) {
       return createErrorResponse('לא נשלחו שדות לעדכון');
@@ -59,7 +65,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     values.push(itemId);
 
     const result = await context.env.DB.prepare(
-      `UPDATE inventory SET ${updates.join(', ')} WHERE id = ? RETURNING id, category, product, quantity, container_capacity, required_target, gap`
+      `UPDATE inventory SET ${updates.join(', ')} WHERE id = ? RETURNING id, category, product, quantity, container_capacity, required_target, gap, notes`
     )
       .bind(...values)
       .first();

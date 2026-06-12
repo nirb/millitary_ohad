@@ -30,6 +30,7 @@ interface InventoryItem {
   container_capacity: number | null;
   required_target: number;
   gap: number;
+  notes: string | null;
 }
 
 interface Transaction {
@@ -94,7 +95,8 @@ export default function App() {
     product: '',
     containerCapacity: '',
     requiredTarget: '',
-    quantity: '' // only used for creating a new item
+    quantity: '', // only used for creating a new item
+    notes: ''
   });
 
   // returned quantity inline state for transactions
@@ -373,7 +375,8 @@ export default function App() {
           product: itemForm.product.trim(),
           quantity: itemForm.quantity ? parseInt(itemForm.quantity, 10) : 0,
           container_capacity: itemForm.containerCapacity ? parseInt(itemForm.containerCapacity, 10) : null,
-          required_target: itemForm.requiredTarget ? parseInt(itemForm.requiredTarget, 10) : 0
+          required_target: itemForm.requiredTarget ? parseInt(itemForm.requiredTarget, 10) : 0,
+          notes: itemForm.notes.trim() || null
         })
       });
       const data = (await res.json()) as any;
@@ -434,7 +437,8 @@ export default function App() {
           product: itemForm.product.trim(),
           quantity: itemForm.quantity ? parseInt(itemForm.quantity, 10) : 0,
           container_capacity: itemForm.containerCapacity ? parseInt(itemForm.containerCapacity, 10) : null,
-          required_target: itemForm.requiredTarget ? parseInt(itemForm.requiredTarget, 10) : 0
+          required_target: itemForm.requiredTarget ? parseInt(itemForm.requiredTarget, 10) : 0,
+          notes: itemForm.notes.trim() || null
         })
       });
       const data = (await res.json()) as any;
@@ -654,7 +658,8 @@ export default function App() {
       product: item.product,
       containerCapacity: item.container_capacity ? String(item.container_capacity) : '',
       requiredTarget: String(item.required_target),
-      quantity: String(item.quantity)
+      quantity: String(item.quantity),
+      notes: item.notes || ''
     });
   };
 
@@ -666,7 +671,8 @@ export default function App() {
       quantity: 0,
       container_capacity: null,
       required_target: 0,
-      gap: 0
+      gap: 0,
+      notes: null
     });
     setModalMode('new_item');
     setItemForm({
@@ -674,7 +680,8 @@ export default function App() {
       product: '',
       containerCapacity: '',
       requiredTarget: '',
-      quantity: '0'
+      quantity: '0',
+      notes: ''
     });
   };
 
@@ -1286,6 +1293,23 @@ export default function App() {
                   </div>
                 </div>
 
+                {selectedItem.notes && (
+                  <div style={{
+                    backgroundColor: 'var(--accent-glow)',
+                    borderRight: '4px solid var(--accent-color)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    color: 'var(--color-text-secondary)',
+                    lineHeight: '1.5',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    <strong style={{ color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>הערות:</strong>
+                    {selectedItem.notes}
+                  </div>
+                )}
+
                 <button
                   onClick={() => setModalMode('addition')}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'right', fontWeight: 600 }}
@@ -1589,6 +1613,18 @@ export default function App() {
                   />
                 </div>
 
+                <div className="input-group">
+                  <label className="input-label">הערות</label>
+                  <textarea
+                    className="tactical-input"
+                    placeholder="הערות לגבי הפריט..."
+                    value={itemForm.notes}
+                    onChange={e => setItemForm({ ...itemForm, notes: e.target.value })}
+                    rows={2}
+                    style={{ direction: 'rtl', textAlign: 'right', resize: 'vertical' }}
+                  />
+                </div>
+
                 <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
                   <button type="submit" className="btn-primary" disabled={loading}>שמור שינויים</button>
                   <button type="button" onClick={handleDeleteItem} className="btn-danger" style={{ width: 'auto', paddingLeft: '16px', paddingRight: '16px' }}>מחק פריט</button>
@@ -1659,6 +1695,18 @@ export default function App() {
                     placeholder="למשל: 10"
                     value={itemForm.containerCapacity}
                     onChange={e => setItemForm({ ...itemForm, containerCapacity: e.target.value })}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">הערות</label>
+                  <textarea
+                    className="tactical-input"
+                    placeholder="הערות לגבי הפריט..."
+                    value={itemForm.notes}
+                    onChange={e => setItemForm({ ...itemForm, notes: e.target.value })}
+                    rows={2}
+                    style={{ direction: 'rtl', textAlign: 'right', resize: 'vertical' }}
                   />
                 </div>
 
