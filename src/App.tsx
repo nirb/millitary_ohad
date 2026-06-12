@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { 
-  Package, 
-  History, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Plus, 
-  UserMinus, 
-  MinusCircle, 
-  Edit, 
-  Check, 
-  X, 
-  AlertTriangle, 
-  CornerDownLeft, 
-  FileSpreadsheet, 
-  User, 
+import {
+  Package,
+  History,
+  Settings,
+  LogOut,
+  Search,
+  Plus,
+  UserMinus,
+  MinusCircle,
+  Edit,
+  Check,
+  X,
+  AlertTriangle,
+  CornerDownLeft,
+  FileSpreadsheet,
+  User,
   Eye,
   EyeOff,
   Download
@@ -56,15 +56,15 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(true);
   const [loginError, setLoginError] = useState('');
-  
+
   // Navigation & UI tabs: 'inventory' | 'transactions' | 'admin'
   const [activeTab, setActiveTab] = useState<'inventory' | 'transactions' | 'admin'>('inventory');
-  
+
   // Search & Filtering
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('הכל');
   const [showOnlyShortfalls, setShowOnlyShortfalls] = useState(false);
-  
+
   // Data States
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -87,7 +87,7 @@ export default function App() {
     unit: '',
     destination: ''
   });
-  
+
   // Comprehensive Update/New Item fields
   const [itemForm, setItemForm] = useState({
     category: '',
@@ -232,8 +232,8 @@ export default function App() {
   // Filtered inventory list
   const filteredInventory = useMemo(() => {
     return inventory.filter(item => {
-      const matchesSearch = item.product.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            item.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = item.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'הכל' || item.category === selectedCategory;
       const matchesShortfall = !showOnlyShortfalls || item.gap > 0;
       return matchesSearch && matchesCategory && matchesShortfall;
@@ -535,10 +535,10 @@ export default function App() {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        
+
         // Parse rows to raw arrays
         const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
-        
+
         const previewItems: any[] = [];
         // Row 0 has headers, start parsing from row 1
         for (let i = 1; i < rows.length; i++) {
@@ -612,7 +612,7 @@ export default function App() {
         showToast('אין פריטים לייצוא במלאי הנוכחי', 'error');
         return;
       }
-      
+
       const exportData = inventory.map(item => ({
         'קטגוריה': item.category,
         'שם מוצר': item.product,
@@ -680,7 +680,7 @@ export default function App() {
 
   // Transaction type formatting helper
   const formatTxType = (type: Transaction['transaction_type']) => {
-    switch(type) {
+    switch (type) {
       case 'ADDITION': return { label: 'הוספת ציוד', color: 'var(--color-success)' };
       case 'SIGN_OUT': return { label: 'החתמת חייל', color: 'var(--color-warning)' };
       case 'DEDUCTION': return { label: 'גריעת מלאי', color: 'var(--color-danger)' };
@@ -739,13 +739,13 @@ export default function App() {
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div className="input-group">
               <label className="input-label">שם משתמש (לצורך תיעוד)</label>
-              <input 
-                type="text" 
-                className="tactical-input" 
-                placeholder="למשל: אוהד ק." 
-                value={loginUsername} 
-                onChange={e => setLoginUsername(e.target.value)} 
-                required 
+              <input
+                type="text"
+                className="tactical-input"
+                placeholder="למשל: אוהד ק."
+                value={loginUsername}
+                onChange={e => setLoginUsername(e.target.value)}
+                required
                 style={{ direction: 'rtl', textAlign: 'right' }}
               />
             </div>
@@ -753,16 +753,16 @@ export default function App() {
             <div className="input-group">
               <label className="input-label">סיסמה מבצעית</label>
               <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="tactical-input" 
-                  placeholder="הזן סיסמת חמ״ל" 
-                  value={loginPassword} 
-                  onChange={e => setLoginPassword(e.target.value)} 
-                  required 
-                  style={{ 
-                    direction: showPassword ? 'rtl' : 'ltr', 
-                    textAlign: showPassword ? 'right' : 'left', 
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="tactical-input"
+                  placeholder="הזן סיסמת חמ״ל"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  required
+                  style={{
+                    direction: showPassword ? 'rtl' : 'ltr',
+                    textAlign: showPassword ? 'right' : 'left',
                     letterSpacing: showPassword ? 'normal' : '2px',
                     paddingRight: '40px'
                   }}
@@ -863,10 +863,10 @@ export default function App() {
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 {/* Search Bar - on the right (first in RTL flow) */}
                 <div style={{ flex: 1, position: 'relative' }}>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
-                    placeholder="חיפוש לפי שם מוצר או קטגוריה..." 
+                  <input
+                    type="text"
+                    className="tactical-input"
+                    placeholder="חיפוש לפי שם מוצר או קטגוריה..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     style={{ paddingRight: '42px', direction: 'rtl', textAlign: 'right' }}
@@ -875,14 +875,14 @@ export default function App() {
                 </div>
 
                 {/* Shortfall Card - on the left (second in RTL flow) */}
-                <div 
+                <div
                   onClick={() => setShowOnlyShortfalls(prev => !prev)}
-                  style={{ 
+                  style={{
                     flex: '0 0 auto',
                     width: '160px',
-                    backgroundColor: showOnlyShortfalls ? 'var(--accent-glow)' : 'var(--card-bg)', 
-                    border: `1px solid ${showOnlyShortfalls ? 'var(--accent-color)' : 'var(--border-color)'}`, 
-                    borderRadius: '8px', 
+                    backgroundColor: showOnlyShortfalls ? 'var(--accent-glow)' : 'var(--card-bg)',
+                    border: `1px solid ${showOnlyShortfalls ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                    borderRadius: '8px',
                     padding: '0 12px',
                     cursor: 'pointer',
                     userSelect: 'none',
@@ -931,16 +931,16 @@ export default function App() {
               <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
                 מציג {filteredInventory.length} פריטים
               </span>
-              <button 
-                onClick={openNewItemModal} 
+              <button
+                onClick={openNewItemModal}
                 style={{
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '4px', 
-                  backgroundColor: 'var(--accent-glow)', 
-                  color: 'var(--accent-color)', 
-                  border: '1px solid var(--border-color)', 
-                  padding: '6px 12px', 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  backgroundColor: 'var(--accent-glow)',
+                  color: 'var(--accent-color)',
+                  border: '1px solid var(--border-color)',
+                  padding: '6px 12px',
                   borderRadius: '6px',
                   fontSize: '13px',
                   fontWeight: 600
@@ -959,9 +959,9 @@ export default function App() {
                     <th>קטגוריה</th>
                     <th>מוצר</th>
                     <th style={{ textAlign: 'center' }}>כמות</th>
-                    <th style={{ textAlign: 'center' }}>במכולה</th>
                     <th style={{ textAlign: 'center' }}>צורך</th>
                     <th style={{ textAlign: 'center' }}>פער</th>
+                    <th style={{ textAlign: 'center' }}>במכולה</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -973,8 +973,8 @@ export default function App() {
                     </tr>
                   ) : (
                     filteredInventory.map(item => (
-                      <tr 
-                        key={item.id} 
+                      <tr
+                        key={item.id}
                         className="table-row-interactive"
                         onClick={() => openItemModal(item)}
                       >
@@ -983,12 +983,12 @@ export default function App() {
                         </td>
                         <td style={{ fontWeight: 700, fontSize: '15px' }}>{item.product}</td>
                         <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '16px' }}>{item.quantity}</td>
-                        <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                          {item.container_capacity ?? '-'}
-                        </td>
                         <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>{item.required_target}</td>
                         <td style={{ textAlign: 'center' }}>
                           {renderFormattedGap(item.gap)}
+                        </td>
+                        <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                          {item.container_capacity ?? '-'}
                         </td>
                       </tr>
                     ))
@@ -1003,7 +1003,7 @@ export default function App() {
         {activeTab === 'transactions' && (
           <div>
             <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px' }}>יומן תנועות והחתמות ציוד</h3>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {transactions.length === 0 ? (
                 <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
@@ -1015,14 +1015,14 @@ export default function App() {
                   const dt = new Date(tx.transaction_timestamp);
                   const formattedTime = dt.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
                   const formattedDate = dt.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
-                  
+
                   return (
-                    <div 
-                      key={tx.id} 
-                      style={{ 
-                        backgroundColor: 'var(--card-bg)', 
-                        border: '1px solid var(--border-color)', 
-                        borderRadius: '12px', 
+                    <div
+                      key={tx.id}
+                      style={{
+                        backgroundColor: 'var(--card-bg)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
                         padding: '16px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -1061,31 +1061,31 @@ export default function App() {
                             <div><strong>יחידה:</strong> {tx.unit || '-'}</div>
                             <div><strong>לאן:</strong> {tx.destination || '-'}</div>
                           </div>
-                          
+
                           {/* Returns Logic inside Transaction Item */}
                           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '13px' }}>
                               כמות שחזרה: <strong className="gap-ok">{tx.returned_quantity}</strong> מתוך {tx.quantity_changed}
                             </span>
-                            
+
                             {editingTxId === tx.id ? (
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <input 
-                                  type="number" 
-                                  className="tactical-input" 
+                                <input
+                                  type="number"
+                                  className="tactical-input"
                                   value={tempReturnQty}
                                   onChange={e => setTempReturnQty(parseInt(e.target.value, 10) || 0)}
                                   min={0}
                                   max={tx.quantity_changed}
                                   style={{ width: '60px', padding: '4px', fontSize: '13px', direction: 'ltr', textAlign: 'center' }}
                                 />
-                                <button 
+                                <button
                                   onClick={() => handleUpdateReturnQty(tx.id)}
                                   style={{ padding: '6px', borderRadius: '4px', backgroundColor: 'var(--accent-color)', color: 'var(--accent-text)' }}
                                 >
                                   <Check size={14} />
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => setEditingTxId(null)}
                                   style={{ padding: '6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', color: 'white' }}
                                 >
@@ -1093,7 +1093,7 @@ export default function App() {
                                 </button>
                               </div>
                             ) : (
-                              <button 
+                              <button
                                 onClick={() => {
                                   setEditingTxId(tx.id);
                                   setTempReturnQty(tx.returned_quantity);
@@ -1130,13 +1130,13 @@ export default function App() {
               {!isImportUnlocked ? (
                 <form onSubmit={handleUnlockImport} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '320px', margin: '16px auto 0 auto', padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <label className="input-label" style={{ textAlign: 'center', fontWeight: 'bold' }}>הזן סיסמת ייבוא לאישור הפעולה</label>
-                  <input 
-                    type="password" 
-                    className="tactical-input" 
-                    placeholder="הזן סיסמה" 
-                    value={importPassword} 
-                    onChange={e => setImportPassword(e.target.value)} 
-                    required 
+                  <input
+                    type="password"
+                    className="tactical-input"
+                    placeholder="הזן סיסמה"
+                    value={importPassword}
+                    onChange={e => setImportPassword(e.target.value)}
+                    required
                     style={{ textAlign: 'center', letterSpacing: '2px' }}
                   />
                   {importPasswordError && (
@@ -1152,11 +1152,11 @@ export default function App() {
               ) : (
                 <>
                   <div style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', padding: '24px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.1)' }}>
-                    <input 
-                      type="file" 
-                      id="xlsx-upload" 
-                      accept=".xlsx" 
-                      onChange={handleExcelUpload} 
+                    <input
+                      type="file"
+                      id="xlsx-upload"
+                      accept=".xlsx"
+                      onChange={handleExcelUpload}
                       style={{ display: 'none' }}
                     />
                     <label htmlFor="xlsx-upload" style={{ cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -1174,9 +1174,9 @@ export default function App() {
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <input 
-                          type="checkbox" 
-                          id="clear-existing" 
+                        <input
+                          type="checkbox"
+                          id="clear-existing"
                           checked={clearExistingBeforeSeed}
                           onChange={e => setClearExistingBeforeSeed(e.target.checked)}
                           style={{ width: '18px', height: '18px', cursor: 'pointer' }}
@@ -1219,11 +1219,11 @@ export default function App() {
                         <button onClick={handleCommitSeed} className="btn-primary" disabled={loading}>
                           {loading ? 'טוען נתונים...' : 'אישור וביצוע ייבוא'}
                         </button>
-                        <button 
+                        <button
                           onClick={() => {
                             setSeedingFile(null);
                             setSeedingPreview([]);
-                          }} 
+                          }}
                           className="btn-secondary"
                         >
                           ביטול
@@ -1243,9 +1243,9 @@ export default function App() {
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
                 הורד את כל פריטי המלאי הנוכחיים המאוחסנים בבסיס הנתונים כקובץ Excel לצורך גיבוי, מעקב או עריכה ידנית.
               </p>
-              <button 
-                onClick={handleExportToExcel} 
-                className="btn-primary" 
+              <button
+                onClick={handleExportToExcel}
+                className="btn-primary"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
                 <Download size={16} />
@@ -1260,7 +1260,7 @@ export default function App() {
       {selectedItem && (
         <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
           <div className="bottom-sheet" onClick={e => e.stopPropagation()}>
-            
+
             {/* Modal Title Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
               <div>
@@ -1286,7 +1286,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setModalMode('addition')}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'right', fontWeight: 600 }}
                 >
@@ -1294,7 +1294,7 @@ export default function App() {
                   <span>[1] הוספת ציוד (מלאי חדש)</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => setModalMode('sign_out')}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'right', fontWeight: 600 }}
                 >
@@ -1302,7 +1302,7 @@ export default function App() {
                   <span>[2] החתמת חייל (הספקת ציוד)</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => setModalMode('deduction')}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'right', fontWeight: 600 }}
                 >
@@ -1310,7 +1310,7 @@ export default function App() {
                   <span>[3] גריעת מלאי (פחת / אובדן)</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => setModalMode('update')}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', textAlign: 'right', fontWeight: 600 }}
                 >
@@ -1318,7 +1318,7 @@ export default function App() {
                   <span>[4] עדכון מקיף של הגדרות פריט</span>
                 </button>
 
-                <button 
+                <button
                   onClick={handleDeleteItem}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: 'rgba(225,29,72,0.05)', border: '1px solid var(--color-danger)', borderRadius: '8px', textAlign: 'right', fontWeight: 600, color: 'var(--color-danger)' }}
                 >
@@ -1345,15 +1345,15 @@ export default function App() {
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '160px', overflowY: 'auto', paddingRight: '4px' }}>
                         {activeSignOuts.map(tx => (
-                          <div 
-                            key={tx.id} 
-                            style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center', 
-                              backgroundColor: 'rgba(255,255,255,0.02)', 
-                              border: '1px solid var(--border-color)', 
-                              borderRadius: '8px', 
+                          <div
+                            key={tx.id}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              backgroundColor: 'rgba(255,255,255,0.02)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '8px',
                               padding: '10px',
                               fontSize: '13px'
                             }}
@@ -1378,11 +1378,11 @@ export default function App() {
                                   setModalMode('return');
                                 }}
                                 className="btn-secondary"
-                                style={{ 
-                                  padding: '4px 8px', 
-                                  fontSize: '12px', 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
+                                style={{
+                                  padding: '4px 8px',
+                                  fontSize: '12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
                                   gap: '4px',
                                   borderColor: 'var(--color-success)',
                                   color: 'var(--color-success)',
@@ -1408,9 +1408,9 @@ export default function App() {
                 <h4 style={{ fontSize: '15px', fontWeight: 700 }}>הוספת מלאי מחדש</h4>
                 <div className="input-group">
                   <label className="input-label">כמות להוספה</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     value={addQty}
                     onChange={e => setAddQty(Math.max(1, parseInt(e.target.value, 10) || 0))}
                     min={1}
@@ -1430,9 +1430,9 @@ export default function App() {
                 <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-danger)' }}>גריעת ציוד מהמלאי (פחת/אובדן)</h4>
                 <div className="input-group">
                   <label className="input-label">כמות לגריעה (מקסימום זמין: {selectedItem.quantity})</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     value={deductQty}
                     onChange={e => setDeductQty(Math.max(1, parseInt(e.target.value, 10) || 0))}
                     min={1}
@@ -1451,12 +1451,12 @@ export default function App() {
             {modalMode === 'sign_out' && (
               <form onSubmit={handleSignOut} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-warning)' }}>טופס החתמת ציוד</h4>
-                
+
                 <div className="input-group">
                   <label className="input-label">כמות להחתמה (מקסימום זמין: {selectedItem.quantity})</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     value={signOutForm.qty}
                     onChange={e => setSignOutForm({ ...signOutForm, qty: Math.max(1, parseInt(e.target.value, 10) || 0) })}
                     min={1}
@@ -1467,9 +1467,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">שם מלא של החייל/מקבל</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="שם פרטי ומשפחה"
                     value={signOutForm.fullName}
                     onChange={e => setSignOutForm({ ...signOutForm, fullName: e.target.value })}
@@ -1480,9 +1480,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">מספר טלפון</label>
-                  <input 
-                    type="tel" 
-                    className="tactical-input" 
+                  <input
+                    type="tel"
+                    className="tactical-input"
                     placeholder="מספר טלפון ליצירת קשר"
                     value={signOutForm.phone}
                     onChange={e => setSignOutForm({ ...signOutForm, phone: e.target.value })}
@@ -1492,9 +1492,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">מחלקה/יחידה</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="למשל: כיתה 1 / מפקדה"
                     value={signOutForm.unit}
                     onChange={e => setSignOutForm({ ...signOutForm, unit: e.target.value })}
@@ -1504,9 +1504,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">יעד/לאן מיועד הציוד</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="מכולה / שטח / עמדה"
                     value={signOutForm.destination}
                     onChange={e => setSignOutForm({ ...signOutForm, destination: e.target.value })}
@@ -1527,12 +1527,12 @@ export default function App() {
             {modalMode === 'update' && (
               <form onSubmit={handleUpdateItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <h4 style={{ fontSize: '15px', fontWeight: 700 }}>עדכון פרטי מוצר</h4>
-                
+
                 <div className="input-group">
                   <label className="input-label">קטגוריה</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="למשל: לוגיסטיקה, חד'פ"
                     value={itemForm.category}
                     onChange={e => setItemForm({ ...itemForm, category: e.target.value })}
@@ -1543,9 +1543,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">שם מוצר / פריט</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="למשל: ספסל, פנס ראש"
                     value={itemForm.product}
                     onChange={e => setItemForm({ ...itemForm, product: e.target.value })}
@@ -1556,9 +1556,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">כמות במלאי</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="כמות נוכחית במלאי"
                     value={itemForm.quantity}
                     onChange={e => setItemForm({ ...itemForm, quantity: e.target.value })}
@@ -1568,9 +1568,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">צורך יעד (כמות יעד נדרשת)</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="כמה צריך שיהיה סה״כ"
                     value={itemForm.requiredTarget}
                     onChange={e => setItemForm({ ...itemForm, requiredTarget: e.target.value })}
@@ -1580,9 +1580,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">כמות במכולה (אופציונלי)</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="למשל: 10 (משאיר ריק אם אין)"
                     value={itemForm.containerCapacity}
                     onChange={e => setItemForm({ ...itemForm, containerCapacity: e.target.value })}
@@ -1601,12 +1601,12 @@ export default function App() {
             {modalMode === 'new_item' && (
               <form onSubmit={handleCreateNewItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <h4 style={{ fontSize: '15px', fontWeight: 700 }}>הוספת פריט חדש למלאי</h4>
-                
+
                 <div className="input-group">
                   <label className="input-label">קטגוריה</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="למשל: לוגיסטיקה, חד'פ, חשמל"
                     value={itemForm.category}
                     onChange={e => setItemForm({ ...itemForm, category: e.target.value })}
@@ -1617,9 +1617,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">שם מוצר / פריט</label>
-                  <input 
-                    type="text" 
-                    className="tactical-input" 
+                  <input
+                    type="text"
+                    className="tactical-input"
                     placeholder="למשל: גנרטור 3KVA"
                     value={itemForm.product}
                     onChange={e => setItemForm({ ...itemForm, product: e.target.value })}
@@ -1630,9 +1630,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">כמות ראשונית במלאי</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="0"
                     value={itemForm.quantity}
                     onChange={e => setItemForm({ ...itemForm, quantity: e.target.value })}
@@ -1641,9 +1641,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">צורך יעד (יעד נדרש)</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="כמות יעד רצויה"
                     value={itemForm.requiredTarget}
                     onChange={e => setItemForm({ ...itemForm, requiredTarget: e.target.value })}
@@ -1653,9 +1653,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">כמות במכולה (אופציונלי)</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     placeholder="למשל: 10"
                     value={itemForm.containerCapacity}
                     onChange={e => setItemForm({ ...itemForm, containerCapacity: e.target.value })}
@@ -1683,9 +1683,9 @@ export default function App() {
 
                 <div className="input-group">
                   <label className="input-label">כמות להחזרה למלאי</label>
-                  <input 
-                    type="number" 
-                    className="tactical-input" 
+                  <input
+                    type="number"
+                    className="tactical-input"
                     value={returnQuantityInput}
                     onChange={e => setReturnQuantityInput(Math.min(selectedTxForReturn.quantity_changed, Math.max(1, parseInt(e.target.value, 10) || 0)))}
                     min={1}
@@ -1700,12 +1700,12 @@ export default function App() {
                   <button type="submit" className="btn-primary" disabled={loading} style={{ backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', width: 'auto', paddingLeft: '16px', paddingRight: '16px' }}>
                     {loading ? 'מבצע החזרה...' : 'אישור החזרה'}
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => {
                       setSelectedTxForReturn(null);
                       setModalMode('menu');
-                    }} 
+                    }}
                     className="btn-secondary"
                     style={{ width: 'auto' }}
                   >
@@ -1722,12 +1722,12 @@ export default function App() {
       {/* Bottom Sticky Glass Navigation */}
       <nav className="bottom-nav-glass">
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '64px', maxWidth: '800px', margin: '0 auto' }}>
-          <button 
+          <button
             onClick={() => { setActiveTab('inventory'); setSelectedCategory('הכל'); }}
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               gap: '4px',
               color: activeTab === 'inventory' ? 'var(--accent-color)' : 'var(--color-text-secondary)'
             }}
@@ -1736,12 +1736,12 @@ export default function App() {
             <span style={{ fontSize: '12px', fontWeight: activeTab === 'inventory' ? 'bold' : 'normal' }}>מלאי פעיל</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('transactions')}
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               gap: '4px',
               color: activeTab === 'transactions' ? 'var(--accent-color)' : 'var(--color-text-secondary)'
             }}
@@ -1750,12 +1750,12 @@ export default function App() {
             <span style={{ fontSize: '12px', fontWeight: activeTab === 'transactions' ? 'bold' : 'normal' }}>יומן תנועות</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('admin')}
-            style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               gap: '4px',
               color: activeTab === 'admin' ? 'var(--accent-color)' : 'var(--color-text-secondary)'
             }}
