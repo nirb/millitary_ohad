@@ -231,6 +231,24 @@ export default function App() {
     return ['הכל', ...Array.from(cats)];
   }, [inventory]);
 
+  // Get unique categories (without 'הכל') for autocomplete
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set<string>();
+    inventory.forEach(item => {
+      if (item.category?.trim()) cats.add(item.category.trim());
+    });
+    return Array.from(cats);
+  }, [inventory]);
+
+  // Get unique product names for autocomplete
+  const uniqueProducts = useMemo(() => {
+    const prods = new Set<string>();
+    inventory.forEach(item => {
+      if (item.product?.trim()) prods.add(item.product.trim());
+    });
+    return Array.from(prods);
+  }, [inventory]);
+
   // Filtered inventory list
   const filteredInventory = useMemo(() => {
     return inventory.filter(item => {
@@ -1556,6 +1574,7 @@ export default function App() {
                   <label className="input-label">קטגוריה</label>
                   <input
                     type="text"
+                    list="existing-categories"
                     className="tactical-input"
                     placeholder="למשל: לוגיסטיקה, חד'פ"
                     value={itemForm.category}
@@ -1569,6 +1588,7 @@ export default function App() {
                   <label className="input-label">שם מוצר / פריט</label>
                   <input
                     type="text"
+                    list="existing-products"
                     className="tactical-input"
                     placeholder="למשל: ספסל, פנס ראש"
                     value={itemForm.product}
@@ -1642,6 +1662,7 @@ export default function App() {
                   <label className="input-label">קטגוריה</label>
                   <input
                     type="text"
+                    list="existing-categories"
                     className="tactical-input"
                     placeholder="למשל: לוגיסטיקה, חד'פ, חשמל"
                     value={itemForm.category}
@@ -1655,6 +1676,7 @@ export default function App() {
                   <label className="input-label">שם מוצר / פריט</label>
                   <input
                     type="text"
+                    list="existing-products"
                     className="tactical-input"
                     placeholder="למשל: גנרטור 3KVA"
                     value={itemForm.product}
@@ -1813,6 +1835,18 @@ export default function App() {
           </button>
         </div>
       </nav>
+
+      {/* Datalists for autocomplete */}
+      <datalist id="existing-categories">
+        {uniqueCategories.map(cat => (
+          <option key={cat} value={cat} />
+        ))}
+      </datalist>
+      <datalist id="existing-products">
+        {uniqueProducts.map(prod => (
+          <option key={prod} value={prod} />
+        ))}
+      </datalist>
     </>
   );
 }
