@@ -255,6 +255,13 @@ export default function App() {
     return Array.from(prods);
   }, [inventory]);
 
+  // Check if current user is authorized to import
+  const isAuthorizedToImport = useMemo(() => {
+    if (!username) return false;
+    const name = username.trim().toLowerCase();
+    return name.includes('nirb') || name.includes('tali') || name.includes('taly') || name.includes('טלי');
+  }, [username]);
+
   // Filtered inventory list
   const filteredInventory = useMemo(() => {
     return inventory.filter(item => {
@@ -1403,122 +1410,124 @@ export default function App() {
         {/* Tab 3: EXCEL IMPORT & ADMIN */}
         {activeTab === 'admin' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileSpreadsheet size={18} className="gap-ok" />
-                <span>ייבוא מלאי מקובץ Excel (`.xlsx`)</span>
-              </h3>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
-                מערכת קוראת את השורות מקובץ האקסל. העמודות חייבות להיות מסודרות לפי: קטגוריה (A), מוצר (B), כמות (C), כמות במכולה (D), וצורך (E).
-              </p>
+            {isAuthorizedToImport && (
+              <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileSpreadsheet size={18} className="gap-ok" />
+                  <span>ייבוא מלאי מקובץ Excel (`.xlsx`)</span>
+                </h3>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
+                  מערכת קוראת את השורות מקובץ האקסל. העמודות חייבות להיות מסודרות לפי: קטגוריה (A), מוצר (B), כמות (C), כמות במכולה (D), וצורך (E).
+                </p>
 
-              {!isImportUnlocked ? (
-                <form onSubmit={handleUnlockImport} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '320px', margin: '16px auto 0 auto', padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                  <label className="input-label" style={{ textAlign: 'center', fontWeight: 'bold' }}>הזן סיסמת ייבוא לאישור הפעולה</label>
-                  <input
-                    type="password"
-                    className="tactical-input"
-                    placeholder="הזן סיסמה"
-                    value={importPassword}
-                    onChange={e => setImportPassword(e.target.value)}
-                    required
-                    style={{ textAlign: 'center', letterSpacing: '2px' }}
-                  />
-                  {importPasswordError && (
-                    <div style={{ fontSize: '13px', color: 'var(--color-danger)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                      <AlertTriangle size={14} />
-                      <span>{importPasswordError}</span>
-                    </div>
-                  )}
-                  <button type="submit" className="btn-primary" style={{ marginTop: '4px' }}>
-                    אישור פתיחת נעילה
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <div style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', padding: '24px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.1)' }}>
+                {!isImportUnlocked ? (
+                  <form onSubmit={handleUnlockImport} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '320px', margin: '16px auto 0 auto', padding: '16px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <label className="input-label" style={{ textAlign: 'center', fontWeight: 'bold' }}>הזן סיסמת ייבוא לאישור הפעולה</label>
                     <input
-                      type="file"
-                      id="xlsx-upload"
-                      accept=".xlsx"
-                      onChange={handleExcelUpload}
-                      style={{ display: 'none' }}
+                      type="password"
+                      className="tactical-input"
+                      placeholder="הזן סיסמה"
+                      value={importPassword}
+                      onChange={e => setImportPassword(e.target.value)}
+                      required
+                      style={{ textAlign: 'center', letterSpacing: '2px' }}
                     />
-                    <label htmlFor="xlsx-upload" style={{ cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                      <FileSpreadsheet size={36} className="gap-ok" />
-                      <span style={{ fontWeight: 600, color: 'var(--accent-color)' }}>לחץ לבחירת קובץ Excel</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>תומך בקבצי xlsx בלבד</span>
-                    </label>
-                  </div>
-
-                  {seedingFile && (
-                    <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontWeight: 600 }}>קובץ שנבחר: {seedingFile.name}</span>
-                        <span className="badge badge-mint">{seedingPreview.length} פריטים התגלו</span>
+                    {importPasswordError && (
+                      <div style={{ fontSize: '13px', color: 'var(--color-danger)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <AlertTriangle size={14} />
+                        <span>{importPasswordError}</span>
                       </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <input
-                          type="checkbox"
-                          id="clear-existing"
-                          checked={clearExistingBeforeSeed}
-                          onChange={e => setClearExistingBeforeSeed(e.target.checked)}
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                        />
-                        <label htmlFor="clear-existing" style={{ fontSize: '14px', color: 'var(--color-text-primary)', cursor: 'pointer' }}>
-                          מחק את כל המלאי הקיים בבסיס הנתונים לפני הייבוא (מומלץ לטעינה ראשונית)
-                        </label>
-                      </div>
-
-                      {/* Preview of XLSX items */}
-                      <div style={{ maxHeight: '160px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '8px', backgroundColor: 'rgba(0,0,0,0.2)', marginBottom: '16px' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                          <thead>
-                            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-secondary)' }}>
-                              <th style={{ textAlign: 'right', padding: '4px' }}>קטגוריה</th>
-                              <th style={{ textAlign: 'right', padding: '4px' }}>מוצר</th>
-                              <th style={{ textAlign: 'center', padding: '4px' }}>כמות</th>
-                              <th style={{ textAlign: 'center', padding: '4px' }}>צורך</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {seedingPreview.slice(0, 10).map((p, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                <td style={{ padding: '4px' }}>{p.category}</td>
-                                <td style={{ padding: '4px' }}>{p.product}</td>
-                                <td style={{ textAlign: 'center', padding: '4px' }}>{p.quantity}</td>
-                                <td style={{ textAlign: 'center', padding: '4px' }}>{p.required_target}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        {seedingPreview.length > 10 && (
-                          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '11px', marginTop: '6px' }}>
-                            ועוד {seedingPreview.length - 10} פריטים נוספים...
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button onClick={handleCommitSeed} className="btn-primary" disabled={loading}>
-                          {loading ? 'טוען נתונים...' : 'אישור וביצוע ייבוא'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSeedingFile(null);
-                            setSeedingPreview([]);
-                          }}
-                          className="btn-secondary"
-                        >
-                          ביטול
-                        </button>
-                      </div>
+                    )}
+                    <button type="submit" className="btn-primary" style={{ marginTop: '4px' }}>
+                      אישור פתיחת נעילה
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <div style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', padding: '24px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.1)' }}>
+                      <input
+                        type="file"
+                        id="xlsx-upload"
+                        accept=".xlsx"
+                        onChange={handleExcelUpload}
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="xlsx-upload" style={{ cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <FileSpreadsheet size={36} className="gap-ok" />
+                        <span style={{ fontWeight: 600, color: 'var(--accent-color)' }}>לחץ לבחירת קובץ Excel</span>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>תומך בקבצי xlsx בלבד</span>
+                      </label>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
+
+                    {seedingFile && (
+                      <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <span style={{ fontWeight: 600 }}>קובץ שנבחר: {seedingFile.name}</span>
+                          <span className="badge badge-mint">{seedingPreview.length} פריטים התגלו</span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                          <input
+                            type="checkbox"
+                            id="clear-existing"
+                            checked={clearExistingBeforeSeed}
+                            onChange={e => setClearExistingBeforeSeed(e.target.checked)}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          />
+                          <label htmlFor="clear-existing" style={{ fontSize: '14px', color: 'var(--color-text-primary)', cursor: 'pointer' }}>
+                            מחק את כל המלאי הקיים בבסיס הנתונים לפני הייבוא (מומלץ לטעינה ראשונית)
+                          </label>
+                        </div>
+
+                        {/* Preview of XLSX items */}
+                        <div style={{ maxHeight: '160px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '8px', backgroundColor: 'rgba(0,0,0,0.2)', marginBottom: '16px' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-secondary)' }}>
+                                <th style={{ textAlign: 'right', padding: '4px' }}>קטגוריה</th>
+                                <th style={{ textAlign: 'right', padding: '4px' }}>מוצר</th>
+                                <th style={{ textAlign: 'center', padding: '4px' }}>כמות</th>
+                                <th style={{ textAlign: 'center', padding: '4px' }}>צורך</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {seedingPreview.slice(0, 10).map((p, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <td style={{ padding: '4px' }}>{p.category}</td>
+                                  <td style={{ padding: '4px' }}>{p.product}</td>
+                                  <td style={{ textAlign: 'center', padding: '4px' }}>{p.quantity}</td>
+                                  <td style={{ textAlign: 'center', padding: '4px' }}>{p.required_target}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {seedingPreview.length > 10 && (
+                            <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '11px', marginTop: '6px' }}>
+                              ועוד {seedingPreview.length - 10} פריטים נוספים...
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button onClick={handleCommitSeed} className="btn-primary" disabled={loading}>
+                            {loading ? 'טוען נתונים...' : 'אישור וביצוע ייבוא'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSeedingFile(null);
+                              setSeedingPreview([]);
+                            }}
+                            className="btn-secondary"
+                          >
+                            ביטול
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
               <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
