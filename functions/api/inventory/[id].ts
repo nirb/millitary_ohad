@@ -76,8 +76,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
     // Record transaction that a comprehensive update happened
     await context.env.DB.prepare(
-      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, full_name, unit)
-       VALUES (?, 'UPDATE', 0, ?, 'מערכת')`
+      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, unit, created_by)
+       VALUES (?, 'UPDATE', 0, 'מערכת', ?)`
     )
       .bind(itemId, session.username)
       .run();

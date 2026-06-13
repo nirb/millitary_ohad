@@ -59,8 +59,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Record the transaction as addition
     await context.env.DB.prepare(
-      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, full_name, unit)
-       VALUES (?, 'ADDITION', ?, ?, 'מערכת')`
+      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, unit, created_by)
+       VALUES (?, 'ADDITION', ?, 'מערכת', ?)`
     )
       .bind(result.id, quantity, session.username)
       .run();

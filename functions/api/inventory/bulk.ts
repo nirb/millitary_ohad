@@ -67,8 +67,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Record bulk import transaction
     await context.env.DB.prepare(
-      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, full_name, unit, destination)
-       SELECT id, 'ADDITION', quantity, ?, 'מערכת', 'ייבוא ראשוני' FROM inventory`
+      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, unit, destination, created_by)
+       SELECT id, 'ADDITION', quantity, 'מערכת', 'ייבוא ראשוני', ? FROM inventory`
     )
       .bind(session.username)
       .run()

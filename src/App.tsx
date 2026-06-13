@@ -47,6 +47,7 @@ interface Transaction {
   destination: string | null;
   returned_quantity: number;
   transaction_timestamp: string;
+  created_by: string | null;
   product: string;
   category: string;
   current_quantity: number;
@@ -1347,6 +1348,10 @@ export default function App() {
                           <h4 style={{ fontSize: '16px', fontWeight: '800', marginTop: '6px' }}>
                             {tx.product} <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>({tx.category})</span>
                           </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                            <span style={{ color: 'var(--color-text-muted)' }}>מבצע הפעולה:</span>
+                            <span style={{ fontWeight: 600 }}>{tx.created_by || 'לא ידוע'}</span>
+                          </div>
                         </div>
                         <div style={{ textAlign: 'left' }}>
                           <span style={{ fontSize: '18px', fontWeight: '800', color: typeDetails.color }}>
@@ -1360,7 +1365,7 @@ export default function App() {
                       {tx.transaction_type === 'SIGN_OUT' && (
                         <div style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', padding: '10px', fontSize: '14px', borderLeft: '2px solid var(--color-warning)' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', color: 'var(--color-text-secondary)' }}>
-                            <div><strong>חייל:</strong> {tx.full_name}</div>
+                            <div><strong>חייל/מקבל:</strong> {tx.full_name}</div>
                             <div><strong>טלפון:</strong> {tx.phone_number || '-'}</div>
                             <div><strong>יחידה:</strong> {tx.unit || '-'}</div>
                             <div><strong>לאן:</strong> {tx.destination || '-'}</div>

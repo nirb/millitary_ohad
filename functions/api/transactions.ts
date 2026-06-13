@@ -11,7 +11,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const { results } = await context.env.DB.prepare(
       `SELECT t.id, t.inventory_id, t.transaction_type, t.quantity_changed, 
               t.full_name, t.phone_number, t.unit, t.destination, t.returned_quantity, 
-              t.transaction_timestamp, i.product, i.category, i.quantity as current_quantity
+              t.transaction_timestamp, t.created_by, i.product, i.category, i.quantity as current_quantity
        FROM transactions t
        JOIN inventory i ON t.inventory_id = i.id
        ORDER BY t.transaction_timestamp DESC
@@ -87,8 +87,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     ).bind(qtyDiff, inventory_id);
 
     const insertTxStmt = context.env.DB.prepare(
-      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, full_name, phone_number, unit, destination)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO transactions (inventory_id, transaction_type, quantity_changed, full_name, phone_number, unit, destination, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       inventory_id,
       transaction_type,
@@ -96,7 +96,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       full_name || null,
       phone_number || null,
       unit || null,
-      destination || null
+      destination || null,
+      session.username
     );
 
     // Apply batch
