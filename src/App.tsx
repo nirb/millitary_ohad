@@ -1264,21 +1264,33 @@ export default function App() {
                           </thead>
                           <tbody>
                             {items.map(item => (
-                              <tr
-                                key={item.id}
-                                className="table-row-interactive"
-                                onClick={() => openItemModal(item)}
-                              >
-                                <td style={{ fontWeight: 700, fontSize: '15px' }}>{item.product}</td>
-                                <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '16px' }}>{item.quantity}</td>
-                                <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>{item.required_target}</td>
-                                <td style={{ textAlign: 'center' }}>
-                                  {renderFormattedGap(item.gap)}
-                                </td>
-                                <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                                  {item.container_capacity ?? '-'}
-                                </td>
-                              </tr>
+                              <React.Fragment key={item.id}>
+                                <tr
+                                  className="table-row-interactive"
+                                  onClick={() => openItemModal(item)}
+                                >
+                                  <td style={{ fontWeight: 700, fontSize: '15px', borderBottom: item.notes ? 'none' : undefined }}>{item.product}</td>
+                                  <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '16px', borderBottom: item.notes ? 'none' : undefined }}>{item.quantity}</td>
+                                  <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)', borderBottom: item.notes ? 'none' : undefined }}>{item.required_target}</td>
+                                  <td style={{ textAlign: 'center', borderBottom: item.notes ? 'none' : undefined }}>
+                                    {renderFormattedGap(item.gap)}
+                                  </td>
+                                  <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)', borderBottom: item.notes ? 'none' : undefined }}>
+                                    {item.container_capacity ?? '-'}
+                                  </td>
+                                </tr>
+                                {item.notes && (
+                                  <tr
+                                    className="table-row-interactive"
+                                    onClick={() => openItemModal(item)}
+                                  >
+                                    <td colSpan={5} style={{ padding: '0px 14px 12px 14px', fontSize: '13px', color: 'var(--color-text-secondary)', fontStyle: 'italic', backgroundColor: 'rgba(0,0,0,0.01)' }}>
+                                      <span style={{ fontWeight: 600, color: 'var(--color-text-secondary)', marginRight: '4px' }}>הערות:</span>
+                                      {item.notes}
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
                             ))}
                           </tbody>
                         </table>
