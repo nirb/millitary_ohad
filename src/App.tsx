@@ -20,7 +20,8 @@ import {
   EyeOff,
   Download,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Printer
 } from 'lucide-react';
 
 // Interfaces matching backend models
@@ -684,6 +685,206 @@ export default function App() {
     }
   };
 
+  // Export missing items only to Excel
+  const handleExportMissingToExcel = () => {
+    try {
+      const missingItems = inventory.filter(item => item.gap > 0);
+      if (missingItems.length === 0) {
+        showToast('אין פריטים בחוסר לייצוא במלאי הנוכחי', 'error');
+        return;
+      }
+
+      const exportData = missingItems.map(item => ({
+        'קטגוריה': item.category,
+        'שם מוצר': item.product,
+        'מלאי נוכחי': item.quantity,
+        'תכולת מארז': item.container_capacity ?? '',
+        'תקן נדרש': item.required_target,
+        'חוסר (פער)': item.quantity - item.required_target
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      worksheet['!dir'] = 'rtl'; // RTL direction support for Excel sheet
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'חוסרים חמ"ל');
+
+      const dateStr = new Date().toLocaleDateString('he-IL').replace(/\./g, '-');
+      XLSX.writeFile(workbook, `חוסרי_מלאי_חמל_${dateStr}.xlsx`);
+      showToast('קובץ החוסרים יוצא בהצלחה');
+    } catch (err) {
+      showToast('ייצוא קובץ האקסל נכשל', 'error');
+    }
+  };
+
+  // Export inventory to PDF and print
+  const handleExportToPDF = (type: 'all' | 'missing') => {
+    try {
+      const itemsToExport = type === 'all' ? inventory : inventory.filter(item => item.gap > 0);
+      if (itemsToExport.length === 0) {
+        showToast(type === 'all' ? 'אין פריטים לייצוא במלאי הנוכחי' : 'אין פריטים בחוסר לייצוא במלאי הנוכחי', 'error');
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showToast('נא לאפשר חלונות קופצים בדפדפן לצורך ייצוא PDF', 'error');
+        return;
+      }
+
+      const title = type === 'all' ? 'דוח מלאי פעיל - חמ״ל אספקה' : 'דוח חוסרי מלאי - חמ״ל אספקה';
+      const dateStr = new Date().toLocaleString('he-IL', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+      // Generate HTML string for PDF
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html dir="rtl" lang="he">
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;800&display=swap');
+            body {
+              font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
+              padding: 24px;
+              color: #0f172a;
+              background-color: #ffffff;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 3px double #cbd5e1;
+              padding-bottom: 16px;
+              margin-bottom: 24px;
+            }
+            .header h1 {
+              font-size: 24px;
+              font-weight: 800;
+              margin: 0;
+            }
+            .header .meta {
+              font-size: 13px;
+              color: #475569;
+              text-align: left;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 16px;
+              font-size: 14px;
+            }
+            th, td {
+              border: 1px solid #cbd5e1;
+              padding: 10px 12px;
+              text-align: right;
+            }
+            th {
+              background-color: #f8fafc;
+              font-weight: 700;
+              color: #0f172a;
+            }
+            tr:nth-child(even) {
+              background-color: #f8fafc;
+            }
+            .gap-short {
+              color: #e11d48;
+              font-weight: 700;
+            }
+            .gap-ok {
+              color: #16a34a;
+              font-weight: 700;
+            }
+            .footer {
+              margin-top: 40px;
+              border-top: 1px solid #e2e8f0;
+              padding-top: 12px;
+              font-size: 11px;
+              color: #94a3b8;
+              display: flex;
+              justify-content: space-between;
+            }
+            @media print {
+              body { padding: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1>${title}</h1>
+              <div style="font-size: 14px; color: #475569; margin-top: 4px;">מערכת ניהול מלאי וציוד מבצעי</div>
+            </div>
+            <div class="meta">
+              <div>הופק ע״י: ${username || 'חמ״ל'}</div>
+              <div>תאריך: ${dateStr}</div>
+              <div>סה״כ פריטים: ${itemsToExport.length}</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">קטגוריה</th>
+                <th style="width: 35%;">שם מוצר / פריט</th>
+                <th style="text-align: center; width: 10%;">כמות במלאי</th>
+                <th style="text-align: center; width: 10%;">צורך יעד</th>
+                <th style="text-align: center; width: 12%;">פער</th>
+                <th style="text-align: center; width: 13%;">במכולה</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsToExport.map(item => {
+                const gap = item.gap;
+                let gapText = '0';
+                let gapClass = '';
+                if (gap < 0) {
+                  gapText = `+${Math.abs(gap)}`;
+                  gapClass = 'gap-ok';
+                } else if (gap > 0) {
+                  gapText = `-${gap}`;
+                  gapClass = 'gap-short';
+                }
+
+                return `
+                  <tr>
+                    <td><strong>${item.category}</strong></td>
+                    <td>${item.product}</td>
+                    <td style="text-align: center; font-weight: 700;">${item.quantity}</td>
+                    <td style="text-align: center;">${item.required_target}</td>
+                    <td style="text-align: center;" class="${gapClass}">${gapText}</td>
+                    <td style="text-align: center;">${item.container_capacity ?? '-'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            <span>מערכת חמ״ל אספקה - סודי לשימוש פנימי</span>
+            <span>הופק באופן ממוחשב</span>
+          </div>
+
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.open();
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } catch (err) {
+      showToast('הפקת קובץ PDF נכשלה', 'error');
+    }
+  };
+
   // Trigger modal for a specific row
   const openItemModal = (item: InventoryItem) => {
     setSelectedItem(item);
@@ -1322,19 +1523,61 @@ export default function App() {
             <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
               <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Download size={18} className="gap-ok" />
-                <span>ייצוא מלאי לקובץ Excel (`.xlsx`)</span>
+                <span>מרכז ייצוא דוחות</span>
               </h3>
               <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px', lineHeight: '1.5' }}>
-                הורד את כל פריטי המלאי הנוכחיים המאוחסנים בבסיס הנתונים כקובץ Excel לצורך גיבוי, מעקב או עריכה ידנית.
+                בחר את פורמט הייצוא ואת סוג הנתונים להורדה. דוחות חוסרים יסננו רק פריטים שבהם המלאי הנוכחי נמוך מהתקן הנדרש.
               </p>
-              <button
-                onClick={handleExportToExcel}
-                className="btn-primary"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-              >
-                <Download size={16} />
-                <span>ייצוא מלאי לאקסל</span>
-              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                {/* Excel Section */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: 'rgba(0,0,0,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-color)' }}>
+                    <FileSpreadsheet size={16} />
+                    <span>קובץ Excel (.xlsx)</span>
+                  </h4>
+                  <button
+                    onClick={handleExportToExcel}
+                    className="btn-primary"
+                    style={{ padding: '10px', fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Download size={14} />
+                    <span>ייצוא מלאי מלא</span>
+                  </button>
+                  <button
+                    onClick={handleExportMissingToExcel}
+                    className="btn-secondary"
+                    style={{ padding: '10px', fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderColor: 'var(--color-warning)', color: 'var(--color-warning)' }}
+                  >
+                    <AlertTriangle size={14} />
+                    <span>ייצוא חוסרים בלבד</span>
+                  </button>
+                </div>
+
+                {/* PDF Section */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: 'rgba(0,0,0,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-success)' }}>
+                    <Printer size={16} />
+                    <span>מסמך PDF להדפסה</span>
+                  </h4>
+                  <button
+                    onClick={() => handleExportToPDF('all')}
+                    className="btn-primary"
+                    style={{ padding: '10px', fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', background: 'linear-gradient(135deg, var(--color-success) 0%, #15803d 100%)', boxShadow: 'none' }}
+                  >
+                    <Printer size={14} />
+                    <span>ייצוא מלאי מלא</span>
+                  </button>
+                  <button
+                    onClick={() => handleExportToPDF('missing')}
+                    className="btn-secondary"
+                    style={{ padding: '10px', fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}
+                  >
+                    <AlertTriangle size={14} />
+                    <span>ייצוא חוסרים בלבד</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1904,7 +2147,7 @@ export default function App() {
             }}
           >
             <Settings size={22} />
-            <span style={{ fontSize: '12px', fontWeight: activeTab === 'admin' ? 'bold' : 'normal' }}>ניהול וייבוא</span>
+            <span style={{ fontSize: '12px', fontWeight: activeTab === 'admin' ? 'bold' : 'normal' }}>ייצוא</span>
           </button>
         </div>
       </nav>
