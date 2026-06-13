@@ -18,7 +18,9 @@ import {
   User,
   Eye,
   EyeOff,
-  Download
+  Download,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 // Interfaces matching backend models
@@ -65,6 +67,9 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('הכל');
   const [showOnlyShortfalls, setShowOnlyShortfalls] = useState(false);
+
+  // Collapsed categories state
+  const [collapsedCategories, setCollapsedCategories] = useState<{ [category: string]: boolean }>({});
 
   // Data States
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -259,6 +264,27 @@ export default function App() {
       return matchesSearch && matchesCategory && matchesShortfall;
     });
   }, [inventory, searchTerm, selectedCategory, showOnlyShortfalls]);
+
+  // Group filtered inventory items by category
+  const inventoryByCategory = useMemo(() => {
+    const groups: { [category: string]: InventoryItem[] } = {};
+    filteredInventory.forEach(item => {
+      const cat = item.category || 'ללא קטגוריה';
+      if (!groups[cat]) {
+        groups[cat] = [];
+      }
+      groups[cat].push(item);
+    });
+    return groups;
+  }, [filteredInventory]);
+
+  // Toggle category collapse
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
 
   // Form Submissions for Row Operations
   const handleAddQuantity = async (e: React.FormEvent) => {
@@ -976,51 +1002,84 @@ export default function App() {
               </button>
             </div>
 
-            {/* Table layout optimized for touch */}
-            <div className="table-container">
-              <table className="tactical-table">
-                <thead>
-                  <tr>
-                    <th>קטגוריה</th>
-                    <th>מוצר</th>
-                    <th style={{ textAlign: 'center' }}>כמות</th>
-                    <th style={{ textAlign: 'center' }}>צורך</th>
-                    <th style={{ textAlign: 'center' }}>פער</th>
-                    <th style={{ textAlign: 'center' }}>במכולה</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredInventory.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--color-text-muted)' }}>
-                        לא נמצאו פריטים תואמים
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredInventory.map(item => (
-                      <tr
-                        key={item.id}
-                        className="table-row-interactive"
-                        onClick={() => openItemModal(item)}
-                      >
-                        <td style={{ fontWeight: 600 }}>
-                          <span className="badge badge-olive">{item.category}</span>
-                        </td>
-                        <td style={{ fontWeight: 700, fontSize: '15px' }}>{item.product}</td>
-                        <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '16px' }}>{item.quantity}</td>
-                        <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>{item.required_target}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          {renderFormattedGap(item.gap)}
-                        </td>
-                        <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                          {item.container_capacity ?? '-'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            {/* Grouped tables by Category */}
+            {filteredInventory.length === 0 ? (
+              <div style={{ backgroundColor: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                לא נמצאו פריטים תואמים
+              </div>
+            ) : (
+              Object.keys(inventoryByCategory).map(category => {
+                const items = inventoryByCategory[category];
+                const isCollapsed = !!collapsedCategories[category];
+                return (
+                  <div key={category} style={{ marginBottom: '16px' }}>
+                    {/* Category Header */}
+                    <div
+                      onClick={() => toggleCategory(category)}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: 'var(--card-bg)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        padding: '12px 16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                      }}
+                      className="clickable"
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="badge badge-olive" style={{ fontSize: '14px', fontWeight: 'bold' }}>{category}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                          ({items.length} {items.length === 1 ? 'פריט' : 'פריטים'})
+                        </span>
+                      </div>
+                      <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}>
+                        {isCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                      </div>
+                    </div>
+
+                    {/* Table Container */}
+                    {!isCollapsed && (
+                      <div className="table-container" style={{ marginTop: '8px', animation: 'fadeIn 0.2s ease-out' }}>
+                        <table className="tactical-table">
+                          <thead>
+                            <tr>
+                              <th>מוצר</th>
+                              <th style={{ textAlign: 'center' }}>כמות</th>
+                              <th style={{ textAlign: 'center' }}>צורך</th>
+                              <th style={{ textAlign: 'center' }}>פער</th>
+                              <th style={{ textAlign: 'center' }}>במכולה</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.map(item => (
+                              <tr
+                                key={item.id}
+                                className="table-row-interactive"
+                                onClick={() => openItemModal(item)}
+                              >
+                                <td style={{ fontWeight: 700, fontSize: '15px' }}>{item.product}</td>
+                                <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '16px' }}>{item.quantity}</td>
+                                <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>{item.required_target}</td>
+                                <td style={{ textAlign: 'center' }}>
+                                  {renderFormattedGap(item.gap)}
+                                </td>
+                                <td style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                                  {item.container_capacity ?? '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         )}
 
@@ -1793,17 +1852,31 @@ export default function App() {
       <nav className="bottom-nav-glass">
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '64px', maxWidth: '800px', margin: '0 auto' }}>
           <button
-            onClick={() => { setActiveTab('inventory'); setSelectedCategory('הכל'); }}
+            onClick={() => { setActiveTab('inventory'); setSelectedCategory('הכל'); setShowOnlyShortfalls(false); }}
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: '4px',
-              color: activeTab === 'inventory' ? 'var(--accent-color)' : 'var(--color-text-secondary)'
+              color: (activeTab === 'inventory' && !showOnlyShortfalls) ? 'var(--accent-color)' : 'var(--color-text-secondary)'
             }}
           >
             <Package size={22} />
-            <span style={{ fontSize: '12px', fontWeight: activeTab === 'inventory' ? 'bold' : 'normal' }}>מלאי פעיל</span>
+            <span style={{ fontSize: '12px', fontWeight: (activeTab === 'inventory' && !showOnlyShortfalls) ? 'bold' : 'normal' }}>מלאי פעיל</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('inventory'); setSelectedCategory('הכל'); setShowOnlyShortfalls(true); }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+              color: (activeTab === 'inventory' && showOnlyShortfalls) ? 'var(--color-danger)' : 'var(--color-text-secondary)'
+            }}
+          >
+            <AlertTriangle size={22} />
+            <span style={{ fontSize: '12px', fontWeight: (activeTab === 'inventory' && showOnlyShortfalls) ? 'bold' : 'normal' }}>חוסרים</span>
           </button>
 
           <button
