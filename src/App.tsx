@@ -843,18 +843,18 @@ export default function App() {
             </thead>
             <tbody>
               ${itemsToExport.map(item => {
-                const gap = item.gap;
-                let gapText = '0';
-                let gapClass = '';
-                if (gap < 0) {
-                  gapText = `+${Math.abs(gap)}`;
-                  gapClass = 'gap-ok';
-                } else if (gap > 0) {
-                  gapText = `-${gap}`;
-                  gapClass = 'gap-short';
-                }
+        const gap = item.gap;
+        let gapText = '0';
+        let gapClass = '';
+        if (gap < 0) {
+          gapText = `+${Math.abs(gap)}`;
+          gapClass = 'gap-ok';
+        } else if (gap > 0) {
+          gapText = `-${gap}`;
+          gapClass = 'gap-short';
+        }
 
-                return `
+        return `
                   <tr>
                     <td><strong>${item.category}</strong></td>
                     <td>${item.product}</td>
@@ -864,7 +864,7 @@ export default function App() {
                     <td style="text-align: center;">${item.container_capacity ?? '-'}</td>
                   </tr>
                 `;
-              }).join('')}
+      }).join('')}
             </tbody>
           </table>
 
@@ -973,15 +973,15 @@ export default function App() {
 
   // Shortage Statistics
   const stats = useMemo(() => {
-    let shortfalls = 0;
+    const categoriesWithShortfall = new Set<string>();
     let totalItemsCount = 0;
     inventory.forEach(item => {
       totalItemsCount += item.quantity;
       if (item.gap > 0) {
-        shortfalls += item.gap;
+        categoriesWithShortfall.add(item.category);
       }
     });
-    return { shortfalls, totalItemsCount };
+    return { shortfalls: categoriesWithShortfall.size, totalItemsCount };
   }, [inventory]);
 
   if (!token) {
@@ -1122,14 +1122,14 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 {/* Search Bar - on the right (first in RTL flow) */}
-                <div style={{ flex: 1, position: 'relative' }}>
+                <div style={{ width: 'calc(65% - 6px)', flexShrink: 0, position: 'relative' }}>
                   <input
                     type="text"
                     className="tactical-input"
                     placeholder="חיפוש לפי שם מוצר או קטגוריה..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    style={{ paddingRight: '42px', direction: 'rtl', textAlign: 'right' }}
+                    style={{ width: '100%', paddingRight: '42px', direction: 'rtl', textAlign: 'right' }}
                   />
                   <Search size={18} style={{ position: 'absolute', right: '14px', top: '15px', color: 'var(--color-text-muted)' }} />
                 </div>
@@ -1138,8 +1138,8 @@ export default function App() {
                 <div
                   onClick={() => setShowOnlyShortfalls(prev => !prev)}
                   style={{
-                    flex: '0 0 auto',
-                    width: '160px',
+                    width: 'calc(35% - 6px)',
+                    flexShrink: 0,
                     backgroundColor: showOnlyShortfalls ? 'var(--accent-glow)' : 'var(--card-bg)',
                     border: `1px solid ${showOnlyShortfalls ? 'var(--accent-color)' : 'var(--border-color)'}`,
                     borderRadius: '8px',
@@ -1155,7 +1155,7 @@ export default function App() {
                   title={showOnlyShortfalls ? "לחץ להצגת כל הפריטים" : "לחץ לסינון פריטים בחוסר בלבד"}
                 >
                   <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                    {showOnlyShortfalls ? 'חוסרים פעילים' : 'סה״כ חוסר'}
+                    {showOnlyShortfalls ? 'חוסרים פעילים' : 'סה״כ קטגוריות עם חוסר'}
                   </span>
                   <span style={{ fontSize: '16px', fontWeight: '800', color: stats.shortfalls > 0 ? 'var(--color-danger)' : 'var(--accent-color)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>{stats.shortfalls.toLocaleString()}</span>
