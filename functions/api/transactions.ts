@@ -118,21 +118,22 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
   try {
     const body = await context.request.json() as {
       transaction_id: number;
-      return_quantity: number;
+      return_quantity?: number;
+      returned_quantity?: number;
     };
 
-    const { transaction_id, return_quantity } = body;
+    const { transaction_id, return_quantity, returned_quantity } = body;
 
-    if (!transaction_id || return_quantity === undefined || return_quantity <= 0) {
-      return createErrorResponse('מזהה תנועה או כמות החזרה לא תקינים');
+    if (!transaction_id) {
+      return createErrorResponse('מזהה תנועה לא תקין');
     }
 
     // Get current transaction state
     const tx = (await context.env.DB.prepare(
-      'SELECT inventory_id, quantity_changed, transaction_type FROM transactions WHERE id = ?'
+      'SELECT inventory_id, quantity_changed, returned_quantity, transaction_type FROM transactions WHERE id = ?'
     )
       .bind(transaction_id)
-      .first()) as { inventory_id: number; quantity_changed: number; transaction_type: string } | null;
+      .first()) as { inventory_id: number; quantity_changed: number; returned_quantity: number; transaction_type: string } | null;
 
     if (!tx) {
       return createErrorResponse('התנועה לא נמצאה ביומן', 404);
@@ -142,33 +143,44 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       return createErrorResponse('ניתן להחזיר ציוד רק עבור תנועות החתמה');
     }
 
-    if (return_quantity > tx.quantity_changed) {
-      return createErrorResponse(`כמות המוחזרים (${return_quantity}) לא יכולה לעלות על כמות ההחתמה הנוכחית (${tx.quantity_changed})`);
+    let R = 0;
+    if (return_quantity !== undefined) {
+      R = return_quantity;
+    } else if (returned_quantity !== undefined) {
+      R = returned_quantity - tx.returned_quantity;
+    } else {
+      return createErrorResponse('כמות החזרה לא תקינה');
     }
 
-    // Update inventory (increment by return_quantity)
+    if (R === 0) {
+      return createJSONResponse({ success: true, message: 'אין שינוי בכמות ההחזרה' });
+    }
+
+    const newReturnedQuantity = tx.returned_quantity + R;
+
+    if (newReturnedQuantity < 0) {
+      return createErrorResponse('כמות מוחזרת כוללת לא יכולה להיות שלילית');
+    }
+
+    if (newReturnedQuantity > tx.quantity_changed) {
+      return createErrorResponse(`כמות מוחזרת כוללת (${newReturnedQuantity}) לא יכולה לעלות על כמות ההחתמה המקורית (${tx.quantity_changed})`);
+    }
+
+    // Update inventory (increment by R)
     const updateInvStmt = context.env.DB.prepare(
       'UPDATE inventory SET quantity = quantity + ? WHERE id = ?'
-    ).bind(return_quantity, tx.inventory_id);
+    ).bind(R, tx.inventory_id);
 
-    let updateTxStmt;
-    if (tx.quantity_changed === return_quantity) {
-      // Delete record if fully returned
-      updateTxStmt = context.env.DB.prepare(
-        'DELETE FROM transactions WHERE id = ?'
-      ).bind(transaction_id);
-    } else {
-      // Subtract returned quantity from taken quantity
-      updateTxStmt = context.env.DB.prepare(
-        'UPDATE transactions SET quantity_changed = quantity_changed - ? WHERE id = ?'
-      ).bind(return_quantity, transaction_id);
-    }
+    const updateTxStmt = context.env.DB.prepare(
+      'UPDATE transactions SET returned_quantity = ? WHERE id = ?'
+    ).bind(newReturnedQuantity, transaction_id);
 
     await context.env.DB.batch([updateInvStmt, updateTxStmt]);
 
+    const isFullyReturned = newReturnedQuantity === tx.quantity_changed;
     return createJSONResponse({ 
       success: true, 
-      message: tx.quantity_changed === return_quantity ? 'הציוד הוחזר במלואו והרשומה נמחקה' : 'ההחזרה עודכנה והמלאי עודכן' 
+      message: isFullyReturned ? 'הציוד הוחזר במלואו וההחתמה הושלמה' : 'ההחזרה עודכנה והמלאי עודכן' 
     });
   } catch (err: any) {
     return createErrorResponse(err.message || 'שגיאה בעדכון החזרת הציוד', 500);

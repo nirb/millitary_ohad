@@ -1,0 +1,13 @@
+name = "d1-s3-backup"
+main = "src/index.ts"
+compatibility_date = "2026-06-15"
+
+# Schedule the worker to run daily at midnight UTC
+[triggers]
+crons = ["0 0 * * *"]
+
+[vars]
+ACCOUNT_ID = "e2b3a7492c909032a15bd220b62107ce"
+DATABASE_ID = "6603d25e-c193-447e-9d5b-2604e04e6eff"
+AWS_S3_BUCKET = "s3://watchers-sql-backup/backups"
+AWS_REGION = "il-central-1"

@@ -544,8 +544,9 @@ export default function App() {
   const handleDirectReturnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTxForReturn) return;
-    if (returnQuantityInput <= 0 || returnQuantityInput > selectedTxForReturn.quantity_changed) {
-      showToast(`כמות לא תקינה. הזן מספר בין 1 ל-${selectedTxForReturn.quantity_changed}`, 'error');
+    const remaining = selectedTxForReturn.quantity_changed - selectedTxForReturn.returned_quantity;
+    if (returnQuantityInput <= 0 || returnQuantityInput > remaining) {
+      showToast(`כמות לא תקינה. הזן מספר בין 1 ל-${remaining}`, 'error');
       return;
     }
 
@@ -674,7 +675,6 @@ export default function App() {
         'קטגוריה': item.category,
         'שם מוצר': item.product,
         'מלאי נוכחי': item.quantity,
-        'תכולת מארז': item.container_capacity ?? '',
         'תקן נדרש': item.required_target,
         'חוסר (פער)': item.quantity - item.required_target
       }));
@@ -706,7 +706,6 @@ export default function App() {
         'קטגוריה': item.category,
         'שם מוצר': item.product,
         'מלאי נוכחי': item.quantity,
-        'תכולת מארז': item.container_capacity ?? '',
         'תקן נדרש': item.required_target,
         'חוסר (פער)': item.quantity - item.required_target
       }));
@@ -833,12 +832,11 @@ export default function App() {
           <table>
             <thead>
               <tr>
-                <th style="width: 20%;">קטגוריה</th>
-                <th style="width: 35%;">שם מוצר / פריט</th>
-                <th style="text-align: center; width: 10%;">כמות במלאי</th>
-                <th style="text-align: center; width: 10%;">צורך יעד</th>
-                <th style="text-align: center; width: 12%;">פער</th>
-                <th style="text-align: center; width: 13%;">במכולה</th>
+                <th style="width: 25%;">קטגוריה</th>
+                <th style="width: 40%;">שם מוצר / פריט</th>
+                <th style="text-align: center; width: 11%;">כמות במלאי</th>
+                <th style="text-align: center; width: 11%;">צורך יעד</th>
+                <th style="text-align: center; width: 13%;">פער</th>
               </tr>
             </thead>
             <tbody>
@@ -861,7 +859,6 @@ export default function App() {
                     <td style="text-align: center; font-weight: 700;">${item.quantity}</td>
                     <td style="text-align: center;">${item.required_target}</td>
                     <td style="text-align: center;" class="${gapClass}">${gapText}</td>
-                    <td style="text-align: center;">${item.container_capacity ?? '-'}</td>
                   </tr>
                 `;
       }).join('')}
@@ -1341,6 +1338,11 @@ export default function App() {
                             <span style={{ fontSize: '12px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', backgroundColor: typeDetails.color, color: '#ffffff' }}>
                               {typeDetails.label}
                             </span>
+                            {tx.transaction_type === 'SIGN_OUT' && tx.returned_quantity === tx.quantity_changed && (
+                              <span style={{ fontSize: '12px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--color-success)', color: '#ffffff' }}>
+                                הושלם
+                              </span>
+                            )}
                             <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                               {formattedTime} | {formattedDate}
                             </span>
@@ -1703,7 +1705,7 @@ export default function App() {
                   </h4>
                   {(() => {
                     const activeSignOuts = transactions.filter(
-                      tx => tx.inventory_id === selectedItem.id && tx.transaction_type === 'SIGN_OUT' && tx.quantity_changed > 0
+                      tx => tx.inventory_id === selectedItem.id && tx.transaction_type === 'SIGN_OUT' && (tx.quantity_changed - tx.returned_quantity) > 0
                     );
                     if (activeSignOuts.length === 0) {
                       return (
@@ -1739,12 +1741,12 @@ export default function App() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <span style={{ fontWeight: 800, color: 'var(--color-warning)', direction: 'ltr', display: 'inline-block' }}>
-                                {tx.quantity_changed} יח'
+                                {tx.quantity_changed - tx.returned_quantity} יח'
                               </span>
                               <button
                                 onClick={() => {
                                   setSelectedTxForReturn(tx);
-                                  setReturnQuantityInput(tx.quantity_changed);
+                                  setReturnQuantityInput(tx.quantity_changed - tx.returned_quantity);
                                   setModalMode('return');
                                 }}
                                 className="btn-secondary"
@@ -2068,50 +2070,53 @@ export default function App() {
             )}
 
             {/* Return Form */}
-            {modalMode === 'return' && selectedTxForReturn && (
-              <form onSubmit={handleDirectReturnSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-success)' }}>
-                  החזרת ציוד מ-{selectedTxForReturn.full_name}
-                </h4>
-                <div style={{ fontSize: '14px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', padding: '12px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div><strong>פריט:</strong> {selectedItem.product}</div>
-                  {selectedTxForReturn.unit && <div><strong>יחידה:</strong> {selectedTxForReturn.unit}</div>}
-                  <div><strong>כמות חתומה נוכחית:</strong> {selectedTxForReturn.quantity_changed} יח'</div>
-                </div>
+            {modalMode === 'return' && selectedTxForReturn && (() => {
+              const remaining = selectedTxForReturn.quantity_changed - selectedTxForReturn.returned_quantity;
+              return (
+                <form onSubmit={handleDirectReturnSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-success)' }}>
+                    החזרת ציוד מ-{selectedTxForReturn.full_name}
+                  </h4>
+                  <div style={{ fontSize: '14px', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '8px', padding: '12px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div><strong>פריט:</strong> {selectedItem.product}</div>
+                    {selectedTxForReturn.unit && <div><strong>יחידה:</strong> {selectedTxForReturn.unit}</div>}
+                    <div><strong>כמות חתומה נוכחית:</strong> {remaining} יח'</div>
+                  </div>
 
-                <div className="input-group">
-                  <label className="input-label">כמות להחזרה למלאי</label>
-                  <input
-                    type="number"
-                    className="tactical-input"
-                    value={returnQuantityInput}
-                    onChange={e => setReturnQuantityInput(Math.min(selectedTxForReturn.quantity_changed, Math.max(1, parseInt(e.target.value, 10) || 0)))}
-                    min={1}
-                    max={selectedTxForReturn.quantity_changed}
-                    required
-                  />
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                    * הזן כמות בין 1 ל-{selectedTxForReturn.quantity_changed}. אם תחזיר את כל ה-{selectedTxForReturn.quantity_changed} יחידות, רשומת ההחתמה תימחק לחלוטין.
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                  <button type="submit" className="btn-primary" disabled={loading} style={{ backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', width: 'auto', paddingLeft: '16px', paddingRight: '16px' }}>
-                    {loading ? 'מבצע החזרה...' : 'אישור החזרה'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedTxForReturn(null);
-                      setModalMode('menu');
-                    }}
-                    className="btn-secondary"
-                    style={{ width: 'auto' }}
-                  >
-                    ביטול
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div className="input-group">
+                    <label className="input-label">כמות להחזרה למלאי</label>
+                    <input
+                      type="number"
+                      className="tactical-input"
+                      value={returnQuantityInput}
+                      onChange={e => setReturnQuantityInput(Math.min(remaining, Math.max(1, parseInt(e.target.value, 10) || 0)))}
+                      min={1}
+                      max={remaining}
+                      required
+                    />
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                      * הזן כמות בין 1 ל-{remaining}. אם תחזיר את כל ה-{remaining} יחידות, רשומת ההחתמה תסומן כהושלמה.
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                    <button type="submit" className="btn-primary" disabled={loading} style={{ backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', width: 'auto', paddingLeft: '16px', paddingRight: '16px' }}>
+                      {loading ? 'מבצע החזרה...' : 'אישור החזרה'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedTxForReturn(null);
+                        setModalMode('menu');
+                      }}
+                      className="btn-secondary"
+                      style={{ width: 'auto' }}
+                    >
+                      ביטול
+                    </button>
+                  </div>
+                </form>
+              );
+            })()}
 
           </div>
         </div>
